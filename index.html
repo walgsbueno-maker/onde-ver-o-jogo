@@ -16,7 +16,8 @@
     <meta property="og:title" content="Onde Ver o Jogo - Buscador de Transmissões">
     <meta property="og:description" content="Descubra rapidamente onde assistir qualquer jogo de futebol hoje no Brasil.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://onde-ver-o-jogo-[seu-usuario].vercel.app/"> 
+    <!-- CORRIGIDO: Removido o placeholder confuso na URL de exemplo -->
+    <meta property="og:url" content="https://onde-ver-o-jogo.com.br/"> 
     <!-- Se você tiver uma imagem de logo, use uma meta tag para ela: <meta property="og:image" content="URL_DA_SUA_IMAGEM"> -->
 
     <!-- Carrega o Tailwind CSS para estilização moderna e responsiva -->
@@ -194,7 +195,8 @@
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // IMPORTANTE: setLogLevel importado para debugging detalhado do Firebase
+        import { getFirestore, collection, addDoc, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente (Obrigatórias)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -207,13 +209,18 @@
         let userId = null;
 
         // Variável global para a chave da API Gemini
-        // 🔴 ATENÇÃO: COLOQUE SUA CHAVE AQUI 🔴
+        // 🔴 
+        // 🚨🚨🚨 VOCÊ DEVE SUBSTITUIR A CHAVE ABAIXO PELA SUA CHAVE REAL, SEM COLCHETES OU ASPAS EXTRAS 🚨🚨🚨
+        // 🔴 
         const apiKey = "AIzaSyCe9SjGDNwcVVoyDyFAKJ_57mIFACvF62g"; 
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
         // Inicialização e Autenticação do Firebase
         async function initFirebase() {
             try {
+                // Habilita o logging detalhado para ajudar a depurar o feedback
+                setLogLevel('debug');
+                
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
@@ -225,6 +232,9 @@
                 }
                 
                 userId = auth.currentUser?.uid || crypto.randomUUID();
+                
+                console.log("Firebase e Auth inicializados com sucesso.");
+                console.log("User ID (Firestore Path Identifier):", userId);
                 
                 // Exibe o ID do usuário (Importante para o suporte/monitoramento)
                 document.getElementById('user-id-display').textContent = `ID do Usuário: ${userId}`;
@@ -310,8 +320,8 @@
                 return;
             }
             
-            // 🔴 VERIFICAÇÃO ESSENCIAL DA CHAVE API 🔴
-            if (apiKey === "[INSIRA_SUA_CHAVE_AQUI]" || apiKey === "") {
+            // VERIFICAÇÃO ESSENCIAL DA CHAVE API
+            if (apiKey === "[INSIRA_SUA_CHAVE_AQUI]" || apiKey === "" || apiKey === "SUA_CHAVE_AQUI") {
                 showMessage("Aviso: Por favor, insira sua chave da API Gemini para realizar a busca.", 'error');
                 resultOutput.innerHTML = '<div class="text-red-500 font-semibold">🔑 Insira a Chave da API Gemini no código.</div>';
                 return;
@@ -412,8 +422,8 @@
                 return;
             }
             
-            // 🔴 VERIFICAÇÃO ESSENCIAL DA CHAVE API 🔴
-            if (apiKey === "[INSIRA_SUA_CHAVE_AQUI]" || apiKey === "") {
+            // VERIFICAÇÃO ESSENCIAL DA CHAVE API
+            if (apiKey === "[INSIRA_SUA_CHAVE_AQUI]" || apiKey === "" || apiKey === "SUA_CHAVE_AQUI") {
                 showMessage("Aviso: Por favor, insira sua chave da API Gemini para gerar a análise.", 'error');
                 analysisOutput.innerHTML = '<div class="text-red-500 font-semibold">🔑 Insira a Chave da API Gemini no código.</div>';
                 return;
@@ -514,8 +524,10 @@
                 return;
             }
 
+            // Garante que o Firebase está pronto
             if (!db || !userId) {
                 showFeedbackMessage("Serviço de feedback indisponível. Tente recarregar a página.", 'error');
+                console.error("ERRO: O objeto DB ou User ID não está pronto para enviar feedback.");
                 return;
             }
 
@@ -529,20 +541,26 @@
                 const feedbackCollectionPath = `artifacts/${appId}/users/${userId}/feedback`;
                 const feedbackRef = collection(db, feedbackCollectionPath);
 
-                await addDoc(feedbackRef, {
+                const feedbackData = {
                     text: feedbackText,
                     timestamp: new Date().toISOString(),
                     userId: userId,
-                    appVersion: "1.0.0" // Pode ser útil para rastrear
-                });
+                    appVersion: "1.0.0" 
+                };
+                
+                console.log("Tentando enviar feedback para o caminho:", feedbackCollectionPath);
+                console.log("Dados do Feedback:", feedbackData);
+
+                await addDoc(feedbackRef, feedbackData);
 
                 showFeedbackMessage("Obrigado! Seu feedback foi enviado com sucesso.", 'success');
                 // Fechar modal após um pequeno delay para o usuário ler a mensagem
                 setTimeout(closeFeedbackModal, 2000); 
 
             } catch (error) {
-                console.error("Erro ao enviar feedback para o Firestore:", error);
-                showFeedbackMessage(`Erro ao enviar feedback: ${error.message}`, 'error');
+                // LOG CRÍTICO para ver o erro exato de permissão/conexão do Firebase
+                console.error("ERRO CRÍTICO ao enviar feedback para o Firestore:", error);
+                showFeedbackMessage(`Erro ao enviar feedback: ${error.message}. Verifique o console para detalhes.`, 'error');
             } finally {
                 sendFeedbackButton.disabled = false;
                 feedbackButtonText.textContent = 'Enviar';
