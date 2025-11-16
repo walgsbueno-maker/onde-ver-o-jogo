@@ -43,7 +43,7 @@
         /* Estilização básica para o corpo e scrollbar */
         body {
             background-color: #F8FAFC;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', 'sans-serif';
             min-height: 100vh;
         }
         /* Efeito de carregamento (spinner) */
@@ -207,8 +207,8 @@
         let userId = null;
 
         // Variável global para a chave da API Gemini
-        // 🔴 ATENÇÃO: COLOQUE SUA CHAVE AQUI APÓS OBTER O NOVO CÓDIGO 🔴
-        const apiKey = "AIzaSyCe9SjGDNwcVVoyDyFAKJ_57mIFACvF62g"; 
+        // 🔴 ATENÇÃO: COLOQUE SUA CHAVE AQUI 🔴
+        const apiKey = "[AIzaSyCe9SjGDNwcVVoyDyFAKJ_57mIFACvF62g]"; 
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
         // Inicialização e Autenticação do Firebase
@@ -309,6 +309,14 @@
                 showMessage("Por favor, digite o nome de um time ou jogo específico (ex: 'Palmeiras x São Paulo hoje').", 'error');
                 return;
             }
+            
+            // 🔴 VERIFICAÇÃO ESSENCIAL DA CHAVE API 🔴
+            if (apiKey === "[INSIRA_SUA_CHAVE_AQUI]" || apiKey === "") {
+                showMessage("Aviso: Por favor, insira sua chave da API Gemini para realizar a busca.", 'error');
+                resultOutput.innerHTML = '<div class="text-red-500 font-semibold">🔑 Insira a Chave da API Gemini no código.</div>';
+                return;
+            }
+
 
             hideMessage();
             searchButton.disabled = true;
@@ -401,6 +409,13 @@
             const userQuery = searchInput.value.trim();
             if (userQuery.length < 5) {
                 showMessage("Por favor, digite o nome de um time ou jogo específico para gerar a análise.", 'error');
+                return;
+            }
+            
+            // 🔴 VERIFICAÇÃO ESSENCIAL DA CHAVE API 🔴
+            if (apiKey === "[INSIRA_SUA_CHAVE_AQUI]" || apiKey === "") {
+                showMessage("Aviso: Por favor, insira sua chave da API Gemini para gerar a análise.", 'error');
+                analysisOutput.innerHTML = '<div class="text-red-500 font-semibold">🔑 Insira a Chave da API Gemini no código.</div>';
                 return;
             }
 
