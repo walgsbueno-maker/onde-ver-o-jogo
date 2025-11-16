@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- NOME DO APP: Onde Ver o Jogo -->
-    <title>⚽ Onde Ver o Jogo - Buscador de Transmissões de Futebol no Brasil</title>
+    <title>⚽ Onde Ver o Jogo - Buscador de Transmissões</title>
     
     <!-- 🟢 OTIMIZAÇÃO DE SEO ESSENCIAL (MELHOR INDEXAÇÃO) 🟢 -->
     <meta name="description" content="Descubra rapidamente onde assistir qualquer jogo de futebol hoje no Brasil. Encontre canais de TV, streaming, e análises pré-jogo em um só lugar.">
@@ -450,7 +450,7 @@
 
                 const payload = {
                     contents: [{ parts: [{ text: promptText }] }],
-                    // 🚨 ADICIONADO GOOGLE SEARCH GROUNDING AQUI PARA GARANTIR INFORMAÇÕES ATUALIZADAS
+                    // ADICIONADO GOOGLE SEARCH GROUNDING AQUI PARA GARANTIR INFORMAÇÕES ATUALIZADAS
                     tools: [{ "google_search": {} }],
                     systemInstruction: {
                         parts: [{ text: systemPromptAnalysis }]
