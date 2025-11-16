@@ -3,10 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- LINHA 5 --> <title>⚽ Onde Ver o Jogo</title>
-<!-- LINHA 6 --> <!-- Carrega o Tailwind CSS para estilização moderna e responsiva -->
-<!-- LINHA 7 --> <script src="https://cdn.tailwindcss.com"></script>
-<!-- LINHA 8 --> <!-- Configuração do Tailwind para usar a fonte Inter -->
+    
+    <!-- NOME DO APP: Onde Ver o Jogo -->
+    <title>⚽ Onde Ver o Jogo - Buscador de Transmissões de Futebol no Brasil</title>
+    
+    <!-- 🟢 OTIMIZAÇÃO DE SEO ESSENCIAL (MELHOR INDEXAÇÃO) 🟢 -->
+    <meta name="description" content="Descubra rapidamente onde assistir qualquer jogo de futebol hoje no Brasil. Encontre canais de TV, streaming, e análises pré-jogo em um só lugar.">
+    <meta name="keywords" content="onde ver jogo, transmissão de futebol, canais de futebol, streaming futebol, jogo ao vivo, assistir futebol">
+    <meta name="author" content="Seu Nome">
+    
+    <!-- Tags Open Graph (Para Compartilhamento em Redes Sociais) -->
+    <meta property="og:title" content="Onde Ver o Jogo - Buscador de Transmissões">
+    <meta property="og:description" content="Descubra rapidamente onde assistir qualquer jogo de futebol hoje no Brasil.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://onde-ver-o-jogo-[seu-usuario].vercel.app/"> 
+    <!-- Se você tiver uma imagem de logo, use uma meta tag para ela: <meta property="og:image" content="URL_DA_SUA_IMAGEM"> -->
+
+    <!-- Carrega o Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuração do Tailwind para usar a fonte Inter -->
+    <script>
+        tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
@@ -85,8 +103,9 @@
             <textarea id="feedback-input" rows="4" placeholder="O que você achou do app? Sua opinião é importante!" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-futebol-primaria focus:border-futebol-primaria shadow-sm resize-none"></textarea>
             <div id="feedback-message" class="text-sm mt-2 hidden"></div>
             <div class="flex justify-end space-x-3 mt-4">
-                <button id="close-modal-button" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
-                <button id="send-feedback-button" class="px-4 py-2 bg-futebol-secundaria text-white font-semibold rounded-lg hover:bg-emerald-600 transition duration-150 flex items-center disabled:opacity-50">
+                <!-- Alterado o botão de cancelar para ter o tipo 'button' -->
+                <button id="close-modal-button" type="button" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
+                <button id="send-feedback-button" type="button" class="px-4 py-2 bg-futebol-secundaria text-white font-semibold rounded-lg hover:bg-emerald-600 transition duration-150 flex items-center disabled:opacity-50">
                     <span id="feedback-button-text">Enviar</span>
                     <div id="feedback-loading-spinner" class="hidden spinner ml-2 !border-t-white !w-4 !h-4"></div>
                 </button>
@@ -188,6 +207,7 @@
         let userId = null;
 
         // Variável global para a chave da API Gemini
+        // 🔴 ATENÇÃO: COLOQUE SUA CHAVE AQUI APÓS OBTER O NOVO CÓDIGO 🔴
         const apiKey = "AIzaSyCe9SjGDNwcVVoyDyFAKJ_57mIFACvF62g"; 
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
@@ -534,9 +554,10 @@
         closeModalButton.addEventListener('click', closeFeedbackModal);
         sendFeedbackButton.addEventListener('click', submitFeedback);
         
-        // Fechar modal ao clicar fora
+        // Fechar modal ao clicar fora (corrigido: usa o id do modal)
         feedbackModal.addEventListener('click', (e) => {
-            if (e.target === feedbackModal) {
+            // Verifica se o clique foi diretamente no overlay, e não no conteúdo interno
+            if (e.target.id === 'feedback-modal') {
                 closeFeedbackModal();
             }
         });
