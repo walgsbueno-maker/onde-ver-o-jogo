@@ -16,9 +16,8 @@
     <meta property="og:title" content="Onde Ver o Jogo - Buscador de Transmissões">
     <meta property="og:description" content="Descubra rapidamente onde assistir qualquer jogo de futebol hoje no Brasil.">
     <meta property="og:type" content="website">
-    <!-- CORRIGIDO: Removido o placeholder confuso na URL de exemplo -->
+    <!-- CORRIGIDO: URL de exemplo mais genérica para evitar confusão com o App ID -->
     <meta property="og:url" content="https://onde-ver-o-jogo.com.br/"> 
-    <!-- Se você tiver uma imagem de logo, use uma meta tag para ela: <meta property="og:image" content="URL_DA_SUA_IMAGEM"> -->
 
     <!-- Carrega o Tailwind CSS para estilização moderna e responsiva -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -195,7 +194,7 @@
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // IMPORTANTE: setLogLevel importado para debugging detalhado do Firebase
+        // setLogLevel importado para debugging detalhado do Firebase
         import { getFirestore, collection, addDoc, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente (Obrigatórias)
@@ -209,9 +208,7 @@
         let userId = null;
 
         // Variável global para a chave da API Gemini
-        // 🔴 
         // 🚨🚨🚨 VOCÊ DEVE SUBSTITUIR A CHAVE ABAIXO PELA SUA CHAVE REAL, SEM COLCHETES OU ASPAS EXTRAS 🚨🚨🚨
-        // 🔴 
         const apiKey = "AIzaSyCe9SjGDNwcVVoyDyFAKJ_57mIFACvF62g"; 
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
@@ -330,6 +327,7 @@
 
             hideMessage();
             searchButton.disabled = true;
+            analysisButton.disabled = true; // Desabilita o outro botão durante a busca principal
             buttonText.textContent = 'Buscando...';
             loadingSpinner.classList.remove('hidden');
             resultOutput.innerHTML = '<div class="text-futebol-primaria font-semibold">Procurando informações atualizadas...</div>';
@@ -409,12 +407,13 @@
                 resultOutput.innerHTML = '<div class="text-red-500 font-semibold">Erro de conexão ou API. Verifique o console.</div>';
             } finally {
                 searchButton.disabled = false;
+                analysisButton.disabled = false;
                 buttonText.textContent = 'Buscar Transmissão';
                 loadingSpinner.classList.add('hidden');
             }
         }
 
-        // FUNÇÃO para gerar a análise pré-jogo (Usa Gemini sem Grounding)
+        // FUNÇÃO para gerar a análise pré-jogo (AGORA COM GOOGLE SEARCH GROUNDING PARA INFORMAÇÕES ATUALIZADAS)
         async function generatePreGameAnalysis() {
             const userQuery = searchInput.value.trim();
             if (userQuery.length < 5) {
@@ -430,16 +429,18 @@
             }
 
             hideMessage();
+            searchButton.disabled = true; // Desabilita o outro botão durante a busca
             analysisButton.disabled = true;
             analysisButtonText.textContent = 'Gerando Análise...';
             analysisLoadingSpinner.classList.remove('hidden');
-            analysisOutput.innerHTML = '<div class="text-futebol-secundaria font-semibold">Analisando dados do confronto e gerando o texto...</div>';
+            analysisOutput.innerHTML = '<div class="text-futebol-secundaria font-semibold">Analisando dados do confronto e gerando o texto (agora com busca em tempo real)...</div>';
 
             try {
-                // INSTRUÇÃO DO SISTEMA para a Análise Pré-jogo
+                // INSTRUÇÃO DO SISTEMA para a Análise Pré-jogo (FORÇANDO USO DE DADOS RECENTES)
                 const systemPromptAnalysis = `
                     Você é um analista de futebol brasileiro apaixonado e conciso. 
                     Sua tarefa é gerar uma pequena análise pré-jogo e curiosidades sobre o confronto fornecido pelo usuário.
+                    É **CRUCIAL** que você utilize **APENAS** as informações **MAIS ATUAIS** obtidas pela busca na web para falar sobre o momento dos times, a escalação e a situação atual de jogadores importantes (transferências, lesões, desfalques). EVITE usar informações históricas desatualizadas (como escalação de temporadas passadas).
                     O texto deve ter cerca de 4 a 6 frases, ser envolvente e abordar a história recente, destaques da partida ou o momento atual dos times.
                     Não inclua saudações ou títulos.
                     Foque apenas no resumo do confronto.
@@ -449,6 +450,8 @@
 
                 const payload = {
                     contents: [{ parts: [{ text: promptText }] }],
+                    // 🚨 ADICIONADO GOOGLE SEARCH GROUNDING AQUI PARA GARANTIR INFORMAÇÕES ATUALIZADAS
+                    tools: [{ "google_search": {} }],
                     systemInstruction: {
                         parts: [{ text: systemPromptAnalysis }]
                     },
@@ -477,6 +480,7 @@
                 showMessage(`Ocorreu um erro ao gerar a análise. Detalhe: ${error.message}`, 'error');
                 analysisOutput.innerHTML = '<div class="text-red-500 font-semibold">Erro de conexão ou API. Verifique o console.</div>';
             } finally {
+                searchButton.disabled = false;
                 analysisButton.disabled = false;
                 analysisButtonText.textContent = '✨ Pré-jogo e Curiosidades ✨';
                 analysisLoadingSpinner.classList.add('hidden');
@@ -524,9 +528,9 @@
                 return;
             }
 
-            // Garante que o Firebase está pronto
+            // CRÍTICO: Garante que o Firebase está pronto
             if (!db || !userId) {
-                showFeedbackMessage("Serviço de feedback indisponível. Tente recarregar a página.", 'error');
+                showFeedbackMessage("Erro: O serviço de feedback não está pronto. Por favor, recarregue a página.", 'error');
                 console.error("ERRO: O objeto DB ou User ID não está pronto para enviar feedback.");
                 return;
             }
@@ -549,7 +553,6 @@
                 };
                 
                 console.log("Tentando enviar feedback para o caminho:", feedbackCollectionPath);
-                console.log("Dados do Feedback:", feedbackData);
 
                 await addDoc(feedbackRef, feedbackData);
 
@@ -560,7 +563,8 @@
             } catch (error) {
                 // LOG CRÍTICO para ver o erro exato de permissão/conexão do Firebase
                 console.error("ERRO CRÍTICO ao enviar feedback para o Firestore:", error);
-                showFeedbackMessage(`Erro ao enviar feedback: ${error.message}. Verifique o console para detalhes.`, 'error');
+                // Mensagem aprimorada para o usuário que não tem F12
+                showFeedbackMessage(`Falha ao enviar feedback. Possível erro de permissão do banco de dados: ${error.message.split('Firebase:')[1] || error.message}.`, 'error');
             } finally {
                 sendFeedbackButton.disabled = false;
                 feedbackButtonText.textContent = 'Enviar';
